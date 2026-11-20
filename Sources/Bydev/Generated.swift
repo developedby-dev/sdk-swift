@@ -4,7 +4,7 @@
 
 /// 이 SDK가 따르는 동작 명세 판.
 public enum Spec {
-    public static let version = "1.1.0"
+    public static let version = "1.1.1"
     public static let deviceCodeGrantType = "urn:ietf:params:oauth:grant-type:device_code"
 }
 
@@ -217,7 +217,7 @@ public enum Routes {
 
 /// 규칙 (sdks/spec/rules.json).
 public enum Rules {
-    public static let specVersion = "1.1.0"
+    public static let specVersion = "1.1.1"
     public static let api = "v1"
     public static let userAgentLanguages: [String] = ["typescript", "dotnet", "swift", "kotlin", "python", "go", "rust", "c"]
     public static let userAgentPattern = "^bydev-(typescript|dotnet|swift|kotlin|python|go|rust|c)/[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?( .+)?$"

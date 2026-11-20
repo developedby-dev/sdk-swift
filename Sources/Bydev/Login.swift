@@ -76,13 +76,15 @@ public final class LoginAttempt: @unchecked Sendable {
 
     private var settled: Bool { state.current.settled }
 
-    /// 폴링 지터는 위로만(interval보다 이르면 SLOW_DOWN이다).
-    func schedulePoll() {
+    /// 폴링 지터는 위로만(interval보다 이르면 SLOW_DOWN이다). 429면 `retryAfterSec`보다 이르게 묻지 않는다(명세 5절).
+    func schedulePoll(retryAfterSec: Int = 0) {
         let ports = api.ports
         let interval = state.current.interval
-        let delay = jittered(
-            ports.random, baseMs: Int64(max(0, interval)) * 1000, min: Rules.loginPollJitterMin,
-            max: Rules.loginPollJitterMax)
+        let delay = max(
+            jittered(
+                ports.random, baseMs: Int64(max(0, interval)) * 1000, min: Rules.loginPollJitterMin,
+                max: Rules.loginPollJitterMax),
+            Int64(retryAfterSec) * 1000)
         if ports.clock.nowMs() + delay > expiresAtMs {
             finish(.failure(BydevError(code: Codes.expiredToken, message: "로그인 코드가 만료됐다 — 처음부터 다시")))
             return
@@ -120,8 +122,11 @@ public final class LoginAttempt: @unchecked Sendable {
                 finish(.failure(BydevError.wrap(error, Codes.protocolError, "로그인 응답을 읽지 못했다")))
             }
         case .failure(let e):
-            if e.code == Codes.authorizationPending || e.isTransient {
+            if e.code == Codes.authorizationPending {
                 schedulePoll()
+            } else if e.isTransient {
+                schedulePoll(
+                    retryAfterSec: e.code == Codes.rateLimited || e.httpStatus == 429 ? e.retryAfterSec ?? 0 : 0)
             } else if e.code == Codes.slowDown {
                 state.withLock { s in
                     if let n = e.retryAfterSec, n > 0 {

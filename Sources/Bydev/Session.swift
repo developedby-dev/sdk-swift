@@ -154,6 +154,8 @@ public final class LicenseSession: @unchecked Sendable {
         var heartbeat: ScheduleHandle?
         var offline: ScheduleHandle?
         var fallback: String?
+        /// 처음 계산한 지문 해시 — 한 실행 동안 다시 쓴다(명세 10절). 획득마다 다시 읽으면 일시적인 읽기 실패 하나로 다른 기기가 된다
+        var fingerprint: String?
 
         mutating func cancelTimers() {
             heartbeat?.cancel()
@@ -315,6 +317,16 @@ public final class LicenseSession: @unchecked Sendable {
     }
 
     private func fingerprintHash() -> String {
+        if let cached = box.withLock({ $0.fingerprint }) { return cached }
+        let computed = computeFingerprintHash()
+        return box.withLock { s in  // 동시에 계산했으면 먼저 정한 값
+            if let first = s.fingerprint { return first }
+            s.fingerprint = computed
+            return computed
+        }
+    }
+
+    private func computeFingerprintHash() -> String {
         let ports = api.ports
         let source = (try? ports.fingerprint.read())?.trimmingCharacters(in: .whitespacesAndNewlines)
         let value: String

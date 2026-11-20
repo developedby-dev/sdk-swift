@@ -69,9 +69,15 @@ public enum OSPorts {
 struct OSFingerprint: FingerprintSource {
     let installIDFile: String?
     let machineID: @Sendable () -> String?
+    /// 다시 읽기 전 기다림(밀리초, 명세 10절) — 단위 시험은 기다리지 않게 바꿔 끼운다
+    var sleep: @Sendable (Int) -> Void = { Thread.sleep(forTimeInterval: Double($0) / 1000) }
 
+    /// 실패하거나 빈 값이면 설치 ID로 물러나기 전에 다시 읽는다(명세 10절) — 일시적인 실패 하나로 같은 Mac이 다른 기기가 되지 않게.
     func read() throws -> String? {
-        if let id = machineID()?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty { return id }
+        for attempt in 0..<max(Rules.fingerprintSourceReadAttempts, 1) {
+            if attempt > 0 { sleep(Rules.fingerprintSourceReadRetryDelayMs) }
+            if let id = machineID()?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty { return id }
+        }
         guard let installIDFile else { return nil }
         if let data = FileManager.default.contents(atPath: installIDFile),
             let existing = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),

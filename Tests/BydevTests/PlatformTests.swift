@@ -109,6 +109,23 @@ private final class RecordingLog: LogSink, @unchecked Sendable {
     #expect(try OSFingerprint(installIDFile: file, machineID: { " A1B2-UUID \n" }).read() == "A1B2-UUID")
 }
 
+/// 1.2.0 — 2026-11-20 Windows에서 운영체제 식별자 읽기가 한 번 실패해 설치 ID로 등록됐다(같은 PC가 다른 기기). Mac도 같은 규칙.
+@Test func fingerprintRetriesBeforeInstallID() throws {
+    final class Counter: @unchecked Sendable {
+        var reads = 0
+        var slept: [Int] = []
+    }
+    let counter = Counter()
+    var source = OSFingerprint(installIDFile: "/nonexistent/install-id") {
+        counter.reads += 1
+        return counter.reads < 3 ? (counter.reads == 1 ? nil : " ") : "A1B2-UUID"
+    }
+    source.sleep = { counter.slept.append($0) }
+    #expect(try source.read() == "A1B2-UUID")
+    #expect(counter.reads == 3)
+    #expect(counter.slept == [Rules.fingerprintSourceReadRetryDelayMs, Rules.fingerprintSourceReadRetryDelayMs])
+}
+
 /// 이 기기의 실제 지문 출처 · 기기 정보를 한 번 읽는다(값은 출력하지 않는다).
 @Test func thisMachine() throws {
     #expect(!(try OSPorts.fingerprintSource().read() ?? "").isEmpty, "IOPlatformUUID를 읽지 못했다")

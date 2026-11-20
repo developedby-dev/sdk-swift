@@ -4,7 +4,7 @@
 
 /// 이 SDK가 따르는 동작 명세 판.
 public enum Spec {
-    public static let version = "1.1.1"
+    public static let version = "1.2.0"
     public static let deviceCodeGrantType = "urn:ietf:params:oauth:grant-type:device_code"
 }
 
@@ -217,7 +217,7 @@ public enum Routes {
 
 /// 규칙 (sdks/spec/rules.json).
 public enum Rules {
-    public static let specVersion = "1.1.1"
+    public static let specVersion = "1.2.0"
     public static let api = "v1"
     public static let userAgentLanguages: [String] = ["typescript", "dotnet", "swift", "kotlin", "python", "go", "rust", "c"]
     public static let userAgentPattern = "^bydev-(typescript|dotnet|swift|kotlin|python|go|rust|c)/[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?( .+)?$"
@@ -236,6 +236,8 @@ public enum Rules {
     public static let fingerprintAlgorithm = "SHA-256"
     public static let fingerprintSalt = "bydev-device-v1"
     public static let fingerprintEncoding = "hex-lower"
+    public static let fingerprintSourceReadAttempts: Int = 3
+    public static let fingerprintSourceReadRetryDelayMs: Int = 300
     public static let storageService = "dev.developedby.sdk"
     public static let storageRecordVersion: Int = 1
     public static let transientCodes: [String] = ["NETWORK_ERROR", "RATE_LIMITED", "INTERNAL_ERROR"]

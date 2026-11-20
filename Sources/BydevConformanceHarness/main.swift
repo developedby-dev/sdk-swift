@@ -43,6 +43,8 @@ final class Harness: @unchecked Sendable {
     private var failLoad = false
     private var failSave = false
     private var failClear = false
+    /// set fingerprint.fail — 지문 출처를 읽지 못한다(하네스 규약 2절)
+    private var failFingerprint = false
     private var client: LicenseClient?
     private var login: LoginAttempt?
 
@@ -182,7 +184,7 @@ final class Harness: @unchecked Sendable {
             ])
         }
 
-        func read() throws -> String? { fingerprint }
+        func read() throws -> String? { h.locked { h.failFingerprint } ? nil : fingerprint }
 
         func debug(_ message: String) {}
 
@@ -473,6 +475,7 @@ final class Harness: @unchecked Sendable {
                     case "storage.failLoad": failLoad = value
                     case "storage.failSave": failSave = value
                     case "storage.failClear": failClear = value
+                    case "fingerprint.fail": failFingerprint = value
                     default: break
                     }
                 }

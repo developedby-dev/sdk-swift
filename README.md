@@ -13,10 +13,13 @@ Security, IOKit)만 사용합니다. 모든 언어의 SDK가 함께 따르는 [�
 | Swift | 6.0 이상(Swift 6 언어 모드, 엄격한 동시성) |
 | 운영체제 | macOS 12 이상 |
 
-Swift 패키지 이름과 라이브러리 이름은 모두 `Bydev`입니다. 공개 미러 저장소와 버전 태그는 서비스 오픈을 준비할 때 공개합니다.
+Swift 패키지 이름과 라이브러리 이름은 모두 `Bydev`입니다. 공개 저장소 `developedby-dev/sdk-swift`를 Swift Package Manager로 받습니다.
+저장소 이름이 패키지 식별자(`sdk-swift`)가 되므로, 대상의 의존성에는 `.product(name: "Bydev", package: "sdk-swift")`로 적어 주세요.
 
-그 전에는 이 저장소
-안에서만 쓸 수 있습니다.
+```swift
+dependencies: [.package(url: "https://github.com/developedby-dev/sdk-swift", from: "1.0.0")],
+targets: [.executableTarget(name: "MyApp", dependencies: [.product(name: "Bydev", package: "sdk-swift")])]
+```
 
 ## 빠른 시작
 

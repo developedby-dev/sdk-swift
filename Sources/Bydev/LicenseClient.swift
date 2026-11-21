@@ -4,7 +4,7 @@ import Foundation
 /// 데브 라이선스 API 클라이언트다. 서버 응답 하나의 참/거짓으로 기능을 열지 않는다 — `session()`의 상태와 검증된 토큰의 클레임을 쓴다.
 public final class LicenseClient: @unchecked Sendable {
     /// User-Agent(`bydev-swift/<판>`)에 실린다.
-    public static let sdkVersion = "0.1.0"
+    public static let sdkVersion = "1.0.0"
     static let userAgent = "bydev-swift/\(sdkVersion)"
 
     /// 명세 1절의 설정이다.
